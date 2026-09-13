@@ -1,0 +1,49 @@
+# Normalisation fixture, shared by the Python and Kotlin implementations (spec 4.3).
+# Format: input<TAB>expected. Lines starting with # and blank lines are ignored.
+# \u escapes are decoded by both test harnesses before comparison so that
+# invisible characters stay reviewable in a diff.
+Haus	haus
+Häuser	häuser
+HÄUSER	häuser
+Straße	straße
+STRASSE	strasse
+daß	daß
+Fuß	fuß
+FUSS	fuss
+große	große
+ẞUDEL	ßudel
+Muß	muß
+Äpfel	äpfel
+Öl	öl
+Übung	übung
+Nord­Süd	nordsüd
+Hau­s	haus
+Ge​hen	gehen
+Ge‌hen	gehen
+Ge‍hen	gehen
+﻿Buch	buch
+Wort⁠teil	wortteil
+O’Brien	o'brien
+O‘Brien	o'brien
+OʼBrien	o'brien
+O'Brien	o'brien
+O´Brien	o'brien
+O`Brien	o'brien
+geht’s	geht's
+Kinder­buch­autorin	kinderbuchautorin
+Nord-Süd-Achse	nord-süd-achse
+ábc	ábc
+n̈ein	nein
+i̇gel	igel
+İstanbul	istanbul
+Insel	insel
+naïve	naïve
+naı̈ve	naıve
+ﬁnden	ﬁnden
+Élan	élan
+SS	ss
+ǇUBI	ǉubi
+ＡＢ	ａｂ
+zusammenzuge­hen	zusammenzugehen
+"Zitat"	"zitat"
+Hund	hund

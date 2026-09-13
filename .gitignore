@@ -1,0 +1,28 @@
+# Gradle / Android
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Dictionary build intermediates (the shipped artifact is assets/dict.db.gz)
+tools/dictbuild/work/
+tools/dictbuild/*.db
+tools/dictbuild/*.jsonl
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# fixtures are committed; work products are not
+!tools/dictbuild/fixtures/*.jsonl
+app/src/main/assets/dict.db.gz
+app/src/main/assets/dict.db.sha256
