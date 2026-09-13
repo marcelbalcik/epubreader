@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- The dictionary is a 100+ MB build artifact that is reinstalled from
+         assets; never back it up. Books are the user's own files. -->
+    <include domain="database" path="lesen.db" />
+    <exclude domain="file" path="dict" />
+    <exclude domain="file" path="books" />
+</full-backup-content>

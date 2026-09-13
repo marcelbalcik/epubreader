@@ -40,3 +40,66 @@ Deviations from the build spec, and choices the spec left open. Newest last.
   be committed and kaikki.org is unreachable from the build container, so the
   artifact is produced on the desktop by `tools/dictbuild/build_dict.py`
   (owner's call).
+
+## 2026-09-13 — App (milestones 2–6)
+
+* **Pagination geometry (§6).** The spec says `column-width: 100vw` with
+  `column-gap: 2 × margin`. Implemented as
+  `column-width: calc(100vw - 2*margin)` with the same gap, so the *period* of
+  one page is exactly 100vw (width + gap) and the margins are actually visible;
+  with a literal 100vw column the page period would be 100vw + 2×margin and the
+  scroller could not be driven in whole viewport widths.
+* **Scroll snapping (§6).** `scroll-snap-align` cannot be put on a column —
+  columns are not elements. reader.js builds `#lesen-snap`, an overlay of one
+  100vw-wide `pointer-events: none` element per page, outside the multi-column
+  flow. Swipes remain the browser's own scroller, which is what makes them feel
+  native.
+* **A word under the finger beats the page-turn strip (§6/§7).** The outer 12%
+  strips are much wider than `--margin` (12% of a 1080px screen is ~130px), so
+  a literal reading would eat taps on the first and last word of every line —
+  exactly what milestone 4's check forbids ("zero taps trigger a page turn by
+  accident"). A tap inside a strip therefore looks the word up if it passes the
+  same rect test the spec requires, and turns the page otherwise. Tapping real
+  margin still turns the page, because no word passes the test there.
+* **Swiping past a chapter edge.** With the scroller at its first or last page
+  a swipe has nowhere to go, so reader.js reports that gesture as
+  `onTapEmpty("left"/"right")` — the same action as a margin tap. Kotlin then
+  crosses into the adjacent spine item, forward at page 0 and backward at the
+  last page.
+* **Two extra `Book` columns (§9).** `opfPath`, so the OPF can be re-parsed on
+  open without rescanning the archive, and `spineChars`, the per-chapter
+  character counts the whole-book percentage is computed from (§6 asks for them
+  to be counted once at import and cached). Columns rather than a fifth table.
+* **`VocabItem` carries `grammar` and no foreign key.** `grammar` holds the
+  article and plural for the Anki card's second field (§8.6). No FK to `book`
+  on purpose: deleting a book keeps its saved words, which is what the delete
+  dialog promises.
+* **`AnkiExport` works on a `VocabCard` interface** that the Room entity
+  implements, so the escaping is unit-testable without Room on the classpath.
+  Fields carry `<br>` for newlines and spaces for tabs: Anki treats a bare
+  newline as a row break and would import shifted columns without complaining.
+* **Multiword forms and proper nouns are unreachable by a tap.** Consequence of
+  §4.1's POS list (no `name`) and of single-word lookup; noted in
+  `tools/dictbuild/README.md` too. Tapping *Berlin* yields nothing.
+* **No navigation library.** Three screens, so screen state is a sealed
+  interface in `MainActivity` (§2: MVVM-lite, no ceremony).
+* **Settings live in SharedPreferences, not DataStore.** Seven scalars, read
+  synchronously at construction so the first chapter is laid out with the right
+  font size instead of being re-paginated a frame later.
+* **Volume keys are relayed from the activity.** They never reach Compose
+  focus, so `MainActivity` catches them and the reader registers a handler
+  while it is on screen; the matching key-up is swallowed so the system volume
+  UI stays away.
+* **Unverified dependency versions.** Google's Maven was blocked in the
+  authoring container, so the AGP / Compose BOM / AndroidX / Room / webkit pins
+  in `gradle/libs.versions.toml` could not be resolved and are marked as such
+  in that file. Kotlin 2.4.20 and KSP 2.3.12 were verified against Maven
+  Central. §2 asks for the versions actually used to be written down: that has
+  to happen on the first local build.
+* **Milestones 2–6 could not be run.** The authoring container has no Android
+  SDK (`dl.google.com` is blocked) and no device, so the acceptance checks for
+  rendering, pagination, tap-to-lookup and export are unverified. What was
+  verified offline instead: 67 JVM unit tests (dictionary core, HTML injection,
+  EPUB paths, settings payload, Anki TSV), 27 Python tests (build pipeline,
+  normalisation, lookup) and 42 node checks over reader.js's sentence splitter
+  and token cleanup.

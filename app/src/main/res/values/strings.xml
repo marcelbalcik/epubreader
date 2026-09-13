@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lesen</string>
+
+    <!-- Library -->
+    <string name="library_title">Lesen</string>
+    <string name="library_empty">No books yet. Tap + to import an EPUB.</string>
+    <string name="import_book">Import EPUB</string>
+    <string name="delete">Delete</string>
+    <string name="delete_book_title">Delete this book?</string>
+    <string name="delete_book_body">%1$s and its extracted files and reading position will be removed. Saved vocabulary is kept.</string>
+    <string name="cancel">Cancel</string>
+    <string name="progress_percent">%1$d%%</string>
+
+    <!-- Reader -->
+    <string name="toc">Contents</string>
+    <string name="settings">Settings</string>
+    <string name="vocab">Vocabulary</string>
+    <string name="back">Back</string>
+    <string name="page_of">Page %1$d / %2$d</string>
+    <string name="book_percent">%1$d%% of book</string>
+    <string name="return_to_position">Return to previous position</string>
+    <string name="return_action">Return</string>
+
+    <!-- Lookup sheet -->
+    <string name="lookup_action">Nachschlagen</string>
+    <string name="save_word">Merken</string>
+    <string name="saved_word">Saved</string>
+    <string name="no_match">No entry for \"%1$s\"</string>
+    <string name="did_you_mean">Did you mean</string>
+    <string name="compound_of">Compound</string>
+    <string name="path_exact">exact</string>
+    <string name="path_variant">spelling variant</string>
+    <string name="path_heuristic">guessed stem</string>
+    <string name="path_compound">compound split</string>
+    <string name="path_fuzzy">prefix guess</string>
+    <string name="path_none">no match</string>
+    <string name="selection_too_long">%1$d words selected. Lesen looks words up one by one — there is no sentence translation in this app.</string>
+
+    <!-- Settings -->
+    <string name="font_family">Font</string>
+    <string name="font_size">Text size</string>
+    <string name="line_height">Line height</string>
+    <string name="margin">Margin</string>
+    <string name="theme">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_sepia">Sepia</string>
+    <string name="theme_dark">Dark</string>
+    <string name="keep_screen_on">Keep screen on while reading</string>
+    <string name="volume_keys">Turn pages with volume keys</string>
+    <string name="font_serif">Literata (serif)</string>
+    <string name="font_sans">Inter (sans)</string>
+    <string name="font_system">System default</string>
+
+    <!-- Vocab -->
+    <string name="vocab_empty">No saved words yet. Tap a word while reading and press Merken.</string>
+    <string name="vocab_search">Search saved words</string>
+    <string name="export_tsv">Export for Anki</string>
+    <string name="export_done">Exported %1$d words</string>
+    <string name="export_failed">Export failed: %1$s</string>
+
+    <!-- Dictionary install -->
+    <string name="dict_installing">Preparing dictionary…</string>
+    <string name="dict_installing_body">Unpacking the German dictionary. This happens once.</string>
+    <string name="dict_missing">The dictionary is not bundled in this build.</string>
+    <string name="dict_missing_body">Build it on the desktop with tools/dictbuild/build_dict.py, which writes app/src/main/assets/dict.db.gz, then reinstall the app. See tools/dictbuild/README.md.</string>
+    <string name="dict_corrupt">The bundled dictionary failed its checksum and was not installed.</string>
+    <string name="retry">Retry</string>
+
+    <!-- Import errors -->
+    <string name="import_failed">Could not import this file</string>
+    <string name="import_encrypted">This EPUB is DRM-encrypted (META-INF/encryption.xml). Lesen cannot read it, and would only show garbled text if it tried.</string>
+    <string name="import_not_epub">This file is not a readable EPUB (no META-INF/container.xml).</string>
+    <string name="import_unsafe">This EPUB contains an entry that would be written outside its own folder, so it was rejected.</string>
+    <string name="import_no_spine">This EPUB has no readable chapters.</string>
+</resources>

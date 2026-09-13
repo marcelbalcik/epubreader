@@ -1,0 +1,235 @@
+/*
+ * Lesen's reading stylesheet (spec section 6).
+ *
+ * Injected as the last stylesheet in <head>, so it wins over the book's own CSS
+ * wherever specificity ties. Everything the settings sheet controls is a custom
+ * property on :root, set from Kotlin with one setProperty call per change - no
+ * stylesheet is rebuilt and no chapter is reloaded when the font size changes.
+ *
+ * Pagination is CSS multi-column, deliberately:
+ *
+ *   period of one page = column-width + column-gap
+ *                      = (100vw - 2*margin) + 2*margin
+ *                      = 100vw
+ *
+ * so page N starts at exactly N * 100vw and the horizontal scroller can be
+ * driven by whole viewport widths. The spec writes this as "column-width: 100vw,
+ * column-gap: 2x margin"; subtracting the margins from the width is what makes
+ * the margins actually visible while keeping the period at 100vw.
+ *
+ * Snapping comes from #lesen-snap, an overlay of one 100vw-wide, pointer-events:
+ * none child per page that reader.js builds after layout. CSS cannot put
+ * scroll-snap-align on a column box - columns are not elements - so the snap
+ * points are real elements sitting outside the multi-column flow. Swiping is
+ * then the browser's own scroller, which is why it feels native.
+ */
+
+:root {
+    /* Set from Kotlin (ReaderCss.kt); these are the fallbacks. */
+    --font-size: 19px;
+    --line-height: 1.55;
+    --margin: 24px;
+    --font-family: "Literata", Georgia, serif;
+    --bg: #FDFDFB;
+    --fg: #1A1A1A;
+    --muted: #6B6B6B;
+    --hit-bg: rgba(255, 214, 102, 0.55);
+    --link: #4A6FA5;
+}
+
+@font-face {
+    font-family: "Literata";
+    font-style: normal;
+    font-weight: 200 900;
+    font-display: block;
+    src: url("/lesen/fonts/Literata.ttf") format("truetype-variations");
+}
+
+@font-face {
+    font-family: "Literata";
+    font-style: italic;
+    font-weight: 200 900;
+    font-display: block;
+    src: url("/lesen/fonts/Literata-Italic.ttf") format("truetype-variations");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: block;
+    src: url("/lesen/fonts/Inter.ttf") format("truetype-variations");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: block;
+    src: url("/lesen/fonts/Inter-Italic.ttf") format("truetype-variations");
+}
+
+html {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    /* The WebView must not second-guess our type scale. */
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    position: relative;
+    /* No text selection handles on a plain tap; long-press still selects. */
+    -webkit-tap-highlight-color: transparent;
+}
+
+#lesen-content {
+    box-sizing: border-box;
+    margin: var(--margin);
+    height: calc(100vh - 2 * var(--margin));
+    column-width: calc(100vw - 2 * var(--margin));
+    column-gap: calc(2 * var(--margin));
+    column-fill: auto;
+
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+    color: var(--fg);
+    text-align: left;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+/* Until reader.js has wrapped the chapter and built the snap points, the text
+   would show for one frame as an unpaginated scroll. Hide it for that frame. */
+body:not(.lesen-ready) #lesen-content {
+    visibility: hidden;
+}
+
+#lesen-snap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1px;
+    display: flex;
+    pointer-events: none;
+    z-index: 0;
+}
+
+#lesen-snap > i {
+    display: block;
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 1px;
+    scroll-snap-align: start;
+}
+
+/*
+ * Spec section 12, trap 1: an image with no max-height produces one blank page
+ * per image, because a figure taller than the column cannot be broken and gets
+ * pushed to a column of its own. Constrain everything that can be oversized.
+ */
+#lesen-content img,
+#lesen-content svg,
+#lesen-content video,
+#lesen-content table,
+#lesen-content pre,
+#lesen-content figure {
+    max-width: 100%;
+    max-height: calc(92vh - 2 * var(--margin));
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+#lesen-content img,
+#lesen-content svg {
+    height: auto;
+    object-fit: contain;
+}
+
+#lesen-content table {
+    display: block;
+    overflow-x: auto;
+    border-collapse: collapse;
+}
+
+#lesen-content p {
+    orphans: 2;
+    widows: 2;
+    margin: 0 0 0.65em;
+    text-indent: 0;
+}
+
+#lesen-content h1,
+#lesen-content h2,
+#lesen-content h3,
+#lesen-content h4 {
+    break-after: avoid;
+    -webkit-column-break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    line-height: 1.25;
+    font-family: var(--font-family);
+}
+
+#lesen-content a,
+#lesen-content a:visited {
+    color: var(--link);
+    text-decoration: none;
+}
+
+/*
+ * The tapped-word highlight. display:inline with no padding and no border is
+ * not negotiable: any box change reflows the column and jumps the page out from
+ * under the reader's thumb (spec section 7).
+ */
+.lesen-hit {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background-color: var(--hit-bg);
+    border-radius: 2px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/*
+ * Dark and sepia have to beat the book's own colours: plenty of EPUBs hardcode
+ * black text or a white background on body/p/span, which is invisible or
+ * blinding against #121212. Only colour is forced - not weight, style or size.
+ */
+body.lesen-force-colors #lesen-content,
+body.lesen-force-colors #lesen-content * {
+    background-color: transparent !important;
+    color: var(--fg) !important;
+    border-color: color-mix(in srgb, var(--fg) 25%, transparent) !important;
+}
+
+body.lesen-force-colors #lesen-content a,
+body.lesen-force-colors #lesen-content a * {
+    color: var(--link) !important;
+}
+
+body.lesen-force-colors #lesen-content .lesen-hit {
+    background-color: var(--hit-bg) !important;
+}
+
+/* Images stay as they are, but soften them so they do not glare in the dark. */
+body.lesen-force-colors.lesen-dark #lesen-content img,
+body.lesen-force-colors.lesen-dark #lesen-content svg {
+    filter: brightness(0.82) contrast(1.05);
+}

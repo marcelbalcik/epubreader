@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An open book with a bookmark; drawn by hand to avoid a binary asset. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#F4ECD8"
+        android:pathData="M28,34 L52,38 L52,76 L28,72 Z" />
+    <path
+        android:fillColor="#F4ECD8"
+        android:pathData="M80,34 L56,38 L56,76 L80,72 Z" />
+    <path
+        android:fillColor="#C9A227"
+        android:pathData="M62,34 L70,33 L70,58 L66,54 L62,58 Z" />
+    <path
+        android:strokeColor="#8A7250"
+        android:strokeWidth="1.5"
+        android:pathData="M54,38 L54,76" />
+</vector>
