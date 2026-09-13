@@ -52,13 +52,15 @@ docs/DECISIONS.md           every deviation from the spec, dated
    ./gradlew :app:installDebug
    ```
 
-> **Version pins.** `gradle/libs.versions.toml` was written in a container
-> where Google's Maven (`dl.google.com` / `maven.google.com`) is blocked by
-> policy, so AGP, the Compose BOM, AndroidX, Room and the webkit library could
-> not be resolved to check them. Kotlin (2.4.20) and KSP (2.3.12) were verified
-> against Maven Central. If a pin fails to resolve on your first build, bump it
-> to the current stable release — the file marks exactly which lines those are —
-> and record what you landed on in `docs/DECISIONS.md`, which spec §2 asks for.
+   Requires JDK 17+ and the Android SDK with `platforms;android-35`
+   (`compileSdk = 35`).
+
+> **Version pins.** `gradle/libs.versions.toml` holds AGP 8.7.3 / Kotlin 2.1.10
+> / KSP 2.1.10-1.0.30 / Compose BOM 2024.12.01 / Room 2.6.1, lifted verbatim
+> from Google's `android/architecture-samples` so that they are known to
+> resolve and to work together. Google's Maven is unreachable from the container
+> this was authored in, so a proven set was chosen over a guessed "latest" — see
+> `docs/DECISIONS.md`. Bump when it builds for you; AGP 9.x needs DSL changes.
 
 ## Tests
 

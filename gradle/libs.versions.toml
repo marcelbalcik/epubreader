@@ -1,25 +1,32 @@
 [versions]
-# Verified against Maven Central at authoring time.
-kotlin = "2.4.20"
-ksp = "2.3.12"
+# A deliberately conservative set, taken verbatim from Google's
+# android/architecture-samples (main), where these versions are used together
+# and therefore known to resolve and to work with each other. Spec section 2
+# asks for "current stable"; Google's Maven is unreachable from the container
+# this was authored in, so a proven set beats a guessed one - the first guess
+# here was AGP 8.14.0, which does not exist. Bump once it builds for you, and
+# note what you land on below.
+#
+# Now-in-Android's main branch is on AGP 9.3.2 / Kotlin 2.3.0, which is the
+# newer pairing if you want it, but AGP 9 changed enough DSL that it is not a
+# blind upgrade.
+agp = "8.7.3"
+kotlin = "2.1.10"
+ksp = "2.1.10-1.0.30"
+composeBom = "2024.12.01"
+coreKtx = "1.15.0"
+lifecycle = "2.8.7"
+activityCompose = "1.9.3"
+room = "2.6.1"
+
+# Not in that sample, so still a guess: androidx.webkit's development line is
+# at 1.18.0-alpha0x, so 1.12.1 is a long-released stable. It is the only
+# dependency here whose exact version has not been cross-checked.
+webkit = "1.12.1"
+
 junit = "4.13.2"
 sqliteJdbc = "3.53.4.0"
 kxml2 = "2.3.0"
-
-# NOT verified: Google's Maven (dl.google.com / maven.google.com) is blocked by
-# the network policy of the container this was authored in, so these could not
-# be resolved. They are the only guessed pins in the project. On the first local
-# build, let Gradle tell you: if one fails to resolve, bump it to the current
-# stable release (Android Studio's "Upgrade AGP" and the Compose BOM page are
-# the quickest sources) and note the version you landed on in docs/DECISIONS.md,
-# which spec section 2 asks for.
-agp = "8.14.0"
-composeBom = "2026.09.00"
-coreKtx = "1.17.0"
-lifecycle = "2.9.4"
-activityCompose = "1.11.0"
-room = "2.8.1"
-webkit = "1.14.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }

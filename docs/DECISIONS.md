@@ -90,12 +90,33 @@ Deviations from the build spec, and choices the spec left open. Newest last.
   focus, so `MainActivity` catches them and the reader registers a handler
   while it is on screen; the matching key-up is swallowed so the system volume
   UI stays away.
-* **Unverified dependency versions.** Google's Maven was blocked in the
-  authoring container, so the AGP / Compose BOM / AndroidX / Room / webkit pins
-  in `gradle/libs.versions.toml` could not be resolved and are marked as such
-  in that file. Kotlin 2.4.20 and KSP 2.3.12 were verified against Maven
-  Central. §2 asks for the versions actually used to be written down: that has
-  to happen on the first local build.
+* **Dependency versions (§2 asks these be written down).** The first attempt
+  guessed AGP 8.14.0, which does not exist — Google's Maven is unreachable from
+  the authoring container, so nothing could be resolved to check. Replaced with
+  a set taken verbatim from Google's `android/architecture-samples`, where these
+  versions are used together and therefore known to resolve and to work with
+  each other:
+
+  | | |
+  |---|---|
+  | AGP | 8.7.3 |
+  | Kotlin | 2.1.10 |
+  | KSP | 2.1.10-1.0.30 |
+  | Compose BOM | 2024.12.01 |
+  | core-ktx | 1.15.0 |
+  | lifecycle | 2.8.7 |
+  | activity-compose | 1.9.3 |
+  | Room | 2.6.1 |
+  | compileSdk / targetSdk | 35 |
+
+  This is conservative rather than latest: Now-in-Android's main branch pairs
+  AGP 9.3.2 with Kotlin 2.3.0, but AGP 9 changed enough DSL that it is not a
+  blind upgrade from a machine that cannot compile. `androidx.webkit` 1.12.1 is
+  the one pin still not cross-checked against another project (its development
+  line is at 1.18.0-alpha0x, so 1.12.1 is a long-released stable).
+* **`kotlin { compilerOptions { … } }` is a top-level block**, not one nested
+  inside `android { }` — the nested form in the first draft is not valid DSL.
+  Found by the same failed build that caught the AGP version.
 * **`EpubParser` takes its XmlPullParser factory and its warning sink as
   parameters**, with the Android wiring in `epub/AndroidEpub.kt`, and the
   unpacking lives in `epub/ZipExtract.kt` rather than inside the importer. Both

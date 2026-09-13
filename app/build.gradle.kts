@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "de.lesen.reader"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "de.lesen.reader"
         minSdk = 29
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         // No instrumentation runner: there are no on-device tests, and adding
@@ -37,12 +37,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
     }
 
     buildFeatures {
@@ -72,10 +66,11 @@ android {
         }
     }
 
-    sourceSets {
-        getByName("main") {
-            java.srcDirs("src/main/java")
-        }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
