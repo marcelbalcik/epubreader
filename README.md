@@ -63,14 +63,29 @@ docs/DECISIONS.md           every deviation from the spec, dated
 ## Tests
 
 ```bash
-python3 -m unittest discover -s tools/dictbuild   # normalisation + build + lookup
-node tools/readerjs/test_reader.js               # reader.js sentence/token handling
-./gradlew :app:testDebugUnitTest                 # the Kotlin half of all of it
+python3 -m unittest discover -s tools/dictbuild        # 27: normalisation, build, lookup
+node tools/readerjs/test_reader.js                     # 42: sentences, tokens, word class
+npm install playwright                                 # once, for the browser checks
+node tools/readerjs/test_reader_browser.mjs            # 34: pagination, taps, restore
+./gradlew :app:testDebugUnitTest                       # 79: the Kotlin half of all of it
 ```
 
-The dictionary core (`dict/`), the HTML injection, the EPUB path arithmetic,
-the settings payload and the Anki exporter carry no Android dependencies on
-purpose, so all of them run as plain JVM unit tests.
+The browser checks drive reader.css and reader.js in headless Chromium - the
+same engine family as the Android WebView - and cover the page-level half of
+milestones 2 to 4: that page N starts at exactly N viewport widths, that a tap
+reports the word under the finger and not the one beside it, that a tap on the
+full stop after a word does not grab that word, that margin taps turn pages
+while taps on text do not, that the highlight cannot reflow the column, that a
+constrained image does not cost a blank page, and that a position saved as
+(block, offset) still shows the same sentence after the font size changes.
+
+The dictionary core (`dict/`), the EPUB parser and unpacker, the HTML
+injection, the settings payload and the Anki exporter carry no Android
+dependencies on purpose, so all of them run as plain JVM unit tests.
+`EpubParser` takes its `XmlPullParser` factory as a constructor parameter -
+the framework's on device (`epub/AndroidEpub.kt`), kxml2's in the tests - which
+is what lets three structurally different EPUBs be parsed and checked in
+`EpubParserTest` without a device.
 
 Two things are checked in two languages against one fixture, because a drift
 between them would be silent rather than loud:

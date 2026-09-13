@@ -10,8 +10,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.UUID
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -49,9 +47,9 @@ class BookImporter(
             val epubFile = File(bookDir, "book.epub")
             copyIn(uri, epubFile)
 
-            extract(epubFile, contentDir)
+            ZipExtract.extract(epubFile, contentDir)
 
-            val structure = EpubParser.parse(contentDir)
+            val structure = AndroidEpubParser.parse(contentDir)
             val spineChars = structure.spine.map { item ->
                 TextCount.countChars(File(contentDir, item.href))
             }
@@ -107,47 +105,6 @@ class BookImporter(
         }
     }
 
-    /**
-     * Extracts the archive, refusing any entry whose canonical destination
-     * escapes [target] (zip slip, spec section 5).
-     */
-    private fun extract(epub: File, target: File) {
-        val canonicalTarget = target.canonicalFile
-        val zip = try {
-            ZipFile(epub)
-        } catch (e: IOException) {
-            throw EpubException(ImportRejection.NOT_A_ZIP, e.message)
-        }
-
-        zip.use { archive ->
-            if (archive.getEntry("META-INF/encryption.xml") != null) {
-                // Refusing beats rendering a chapter of mojibake.
-                throw EpubException(ImportRejection.ENCRYPTED)
-            }
-            if (archive.getEntry("META-INF/container.xml") == null) {
-                throw EpubException(ImportRejection.NO_CONTAINER)
-            }
-
-            val entries = archive.entries()
-            while (entries.hasMoreElements()) {
-                val entry: ZipEntry = entries.nextElement()
-                val destination = File(canonicalTarget, entry.name)
-                val canonical = destination.canonicalFile
-                if (!canonical.path.startsWith(canonicalTarget.path + File.separator)) {
-                    throw EpubException(ImportRejection.UNSAFE_ENTRY, entry.name)
-                }
-                if (entry.isDirectory) {
-                    canonical.mkdirs()
-                    continue
-                }
-                canonical.parentFile?.mkdirs()
-                archive.getInputStream(entry).use { input ->
-                    FileOutputStream(canonical).use { out -> input.copyTo(out, BUFFER) }
-                }
-            }
-        }
-    }
-
     /** Decoded once at import and cached as PNG, so the library grid is cheap. */
     private fun makeThumbnail(source: File, target: File): File? {
         if (!source.isFile) return null
@@ -175,28 +132,4 @@ class BookImporter(
         fun booksRoot(context: Context): File =
             File(context.filesDir, "books").apply { mkdirs() }
     }
-}
-
-/** Character counts for the whole-book progress percentage (spec section 6). */
-object TextCount {
-
-    private val TAG_RE = Regex("<[^>]*>")
-    private val SCRIPT_RE = Regex("(?is)<(script|style)\\b.*?</\\1>")
-    private val ENTITY_RE = Regex("&[a-zA-Z#0-9]+;")
-    private val WS_RE = Regex("\\s+")
-
-    fun countChars(file: File): Int {
-        if (!file.isFile) return 0
-        return runCatching {
-            val html = file.readText(Charsets.UTF_8)
-            plainText(html).length
-        }.getOrDefault(0)
-    }
-
-    fun plainText(html: String): String = html
-        .replace(SCRIPT_RE, " ")
-        .replace(TAG_RE, " ")
-        .replace(ENTITY_RE, "x")     // one character per entity is close enough
-        .replace(WS_RE, " ")
-        .trim()
 }

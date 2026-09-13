@@ -9,7 +9,7 @@ import de.lesen.reader.data.VocabItem
 import de.lesen.reader.dict.LookupPath
 import de.lesen.reader.dict.LookupResult
 import de.lesen.reader.di.AppContainer
-import de.lesen.reader.epub.EpubParser
+import de.lesen.reader.epub.AndroidEpubParser
 import de.lesen.reader.epub.EpubStructure
 import de.lesen.reader.epub.TocEntry
 import java.io.File
@@ -105,7 +105,7 @@ class ReaderViewModel(
             return
         }
         val structure = withContext(Dispatchers.IO) {
-            runCatching { EpubParser.parse(File(book.contentDir)) }
+            runCatching { AndroidEpubParser.parse(File(book.contentDir)) }
         }.getOrElse {
             _ui.value = _ui.value.copy(loading = false, error = it.message ?: "Unreadable EPUB")
             return

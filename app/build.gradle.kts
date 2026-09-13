@@ -103,4 +103,7 @@ dependencies {
     testImplementation(libs.junit)
     // The lookup tests run against a real SQLite file in the shipped schema.
     testImplementation(libs.sqlite.jdbc)
+    // An XmlPullParser implementation for EpubParserTest; on device the parser
+    // is handed the framework's (see epub/AndroidEpub.kt).
+    testImplementation(libs.kxml2)
 }

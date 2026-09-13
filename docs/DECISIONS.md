@@ -96,10 +96,25 @@ Deviations from the build spec, and choices the spec left open. Newest last.
   in that file. Kotlin 2.4.20 and KSP 2.3.12 were verified against Maven
   Central. §2 asks for the versions actually used to be written down: that has
   to happen on the first local build.
+* **`EpubParser` takes its XmlPullParser factory and its warning sink as
+  parameters**, with the Android wiring in `epub/AndroidEpub.kt`, and the
+  unpacking lives in `epub/ZipExtract.kt` rather than inside the importer. Both
+  moves exist so that the fiddliest 400 lines in the app — OPF, NCX, nav, and
+  the zip-slip guard — can be tested against real EPUB archives on a machine
+  with no Android SDK. `TextCount` moved out of `BookImporter.kt` for the same
+  reason.
+* **An absolute zip entry name is allowed through, not refused.**
+  `File(root, "/x.txt")` resolves to `root/x.txt`, so such an entry lands inside
+  the book's own folder; the guard's job is to stop escapes, and a malformed
+  name that cannot escape is not one. Asserted explicitly in
+  `EpubParserTest.zipSlipGuardCoversTheObviousShapes`.
 * **Milestones 2–6 could not be run.** The authoring container has no Android
   SDK (`dl.google.com` is blocked) and no device, so the acceptance checks for
   rendering, pagination, tap-to-lookup and export are unverified. What was
-  verified offline instead: 67 JVM unit tests (dictionary core, HTML injection,
-  EPUB paths, settings payload, Anki TSV), 27 Python tests (build pipeline,
-  normalisation, lookup) and 42 node checks over reader.js's sentence splitter
-  and token cleanup.
+  verified offline instead: 79 JVM unit tests (dictionary core, EPUB parsing and
+  unpacking on three structurally different books, HTML injection, settings
+  payload, Anki TSV), 27 Python tests (build pipeline, normalisation, lookup),
+  42 node checks over reader.js's sentence splitter and token cleanup, and 34
+  checks driving reader.css and reader.js in headless Chromium (pagination
+  geometry, tap targeting, the highlight, image constraints, and position
+  restore across a font size change).

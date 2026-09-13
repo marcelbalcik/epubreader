@@ -26,3 +26,4 @@ __pycache__/
 !tools/dictbuild/fixtures/*.jsonl
 app/src/main/assets/dict.db.gz
 app/src/main/assets/dict.db.sha256
+node_modules/

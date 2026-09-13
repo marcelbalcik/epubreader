@@ -115,13 +115,22 @@
     return window.innerWidth || document.documentElement.clientWidth;
   }
 
-  /** Rebuilds the snap overlay to match the current column count. */
+  /**
+   * Rebuilds the snap overlay to match the current column count.
+   *
+   * The overlay is torn down *before* measuring: it is as wide as the last
+   * pagination made it, and it is inside the scroller, so leaving it in place
+   * would keep body.scrollWidth at the old value and the page count could never
+   * shrink after the font size or margin came down.
+   */
   function paginate() {
+    while (snap.firstChild) snap.removeChild(snap.firstChild);
+    snap.style.width = "0px";
+
     var width = pageWidth();
-    var total = Math.max(document.body.scrollWidth, content.scrollWidth + 1);
+    var total = Math.max(document.body.scrollWidth, content.scrollWidth, width);
     pageCount = Math.max(1, Math.round(total / width));
 
-    while (snap.firstChild) snap.removeChild(snap.firstChild);
     snap.style.width = pageCount * width + "px";
     for (var i = 0; i < pageCount; i++) {
       snap.appendChild(document.createElement("i"));

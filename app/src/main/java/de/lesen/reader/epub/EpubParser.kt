@@ -1,14 +1,12 @@
 package de.lesen.reader.epub
 
-import android.util.Log
-import android.util.Xml
 import java.io.File
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 
 /**
- * Hand-rolled EPUB structure parser (spec section 2/5): java.util.zip did the
- * extraction, this reads the result with XmlPullParser.
+ * Hand-rolled EPUB structure parser (spec section 2/5): ZipExtract did the
+ * unpacking, this reads the result with XmlPullParser.
  *
  * Order of business:
  *   META-INF/container.xml  ->  OPF path
@@ -17,13 +15,20 @@ import org.xmlpull.v1.XmlPullParserException
  *
  * Everything is expressed as paths relative to the extracted content root, so
  * the WebView asset loader and the reader agree on one addressing scheme.
+ *
+ * The XmlPullParser factory and the warning sink are injected rather than taken
+ * from android.util, which is what lets this be unit-tested against real EPUB
+ * files on the desktop (see AndroidEpub.kt for the wiring the app uses, and
+ * EpubParserTest for the three structurally different books it is checked on).
  */
-object EpubParser {
+class EpubParser(
+    private val newPullParser: () -> XmlPullParser,
+    private val onWarning: (String) -> Unit = {},
+) {
 
-    private const val TAG = "EpubParser"
-    private const val OPS_NS = "http://www.idpf.org/2007/ops"
-    private const val NCX_NS = "http://www.daisy.org/z3986/2005/ncx/"
-    private const val CONTAINER = "META-INF/container.xml"
+    private val OPS_NS = "http://www.idpf.org/2007/ops"
+    private val NCX_NS = "http://www.daisy.org/z3986/2005/ncx/"
+    private val CONTAINER = "META-INF/container.xml"
 
     fun parse(contentRoot: File): EpubStructure {
         val opfPath = readContainer(contentRoot)
@@ -172,7 +177,7 @@ object EpubParser {
             if (file.isFile) {
                 runCatching { readNav(file, navItem.href.substringBeforeLast('/', "")) }
                     .onSuccess { if (it.isNotEmpty()) return it }
-                    .onFailure { Log.w(TAG, "nav.xhtml unreadable, trying NCX", it) }
+                    .onFailure { onWarning("nav.xhtml unreadable (${it.message}), trying NCX") }
             }
         }
 
@@ -187,14 +192,14 @@ object EpubParser {
             if (file.isFile) {
                 runCatching { readNcx(file, ncxItem.href.substringBeforeLast('/', "")) }
                     .onSuccess { if (it.isNotEmpty()) return it }
-                    .onFailure { Log.w(TAG, "toc.ncx unreadable", it) }
+                    .onFailure { onWarning("toc.ncx unreadable: ${it.message}") }
             }
         }
 
         // Last resort: the spine itself, so the TOC sheet is never empty.
         return opf.spine.mapIndexed { i, item ->
             TocEntry(0, "Chapter ${i + 1}", item.href, null)
-        }.also { Log.w(TAG, "no nav or ncx: falling back to ${it.size} spine entries") }
+        }.also { onWarning("no nav or ncx: falling back to ${it.size} spine entries") }
     }
 
     /** EPUB 3 nav: `<nav epub:type="toc">` containing nested `<ol><li><a>`. */
@@ -348,7 +353,7 @@ object EpubParser {
 
     private fun percentDecode(s: String) = EpubPaths.percentDecode(s)
 
-    private fun newParser(input: java.io.InputStream): XmlPullParser = Xml.newPullParser().apply {
+    private fun newParser(input: java.io.InputStream): XmlPullParser = newPullParser().apply {
         setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
         // Many real EPUBs contain undeclared HTML entities (&nbsp;) in their
         // nav documents; a strict parser would abort the whole TOC over one.

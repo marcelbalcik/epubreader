@@ -4,6 +4,7 @@ kotlin = "2.4.20"
 ksp = "2.3.12"
 junit = "4.13.2"
 sqliteJdbc = "3.53.4.0"
+kxml2 = "2.3.0"
 
 # NOT verified: Google's Maven (dl.google.com / maven.google.com) is blocked by
 # the network policy of the container this was authored in, so these could not
@@ -42,6 +43,9 @@ androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqliteJdbc" }
+# org.xmlpull.v1 is in the Android framework on device but has no implementation
+# in the unit-test android.jar, so EpubParserTest supplies kxml2 instead.
+kxml2 = { module = "net.sf.kxml:kxml2", version.ref = "kxml2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
